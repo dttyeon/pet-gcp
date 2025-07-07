@@ -1,0 +1,20 @@
+#!/bin/bash
+OLD_IP="${OLD_IP}"
+NEW_IP="${NEW_IP}"
+CONF="/etc/apache2/sites-available/000-default.conf"
+i=0
+
+chmod 644 "$CONF"
+
+for i in {1..10}; do
+  if [ -f "$CONF" ]; then
+    echo "Found $CONF, applying sed..."
+    sed -i "s|${OLD_IP}|${NEW_IP}|g" "$CONF"
+    systemctl restart apache2
+    exit 0
+  fi
+  echo "Waiting for $CONF..."
+  sleep 1
+done
+
+echo "ERROR: Config file not found after 10s"

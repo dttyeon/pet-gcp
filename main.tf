@@ -16,14 +16,14 @@ data "google_client_config" "default" {
 }
 
 provider "kubernetes" {
-  host                   = data.google_container_cluster.cluster.endpoint
+  host                   = "https://${data.google_container_cluster.cluster.endpoint}"
   cluster_ca_certificate = base64decode(data.google_container_cluster.cluster.master_auth[0].cluster_ca_certificate)
   token                  = data.google_client_config.default.access_token
 }
 
 provider "helm" {
   kubernetes = {
-    host                   = data.google_container_cluster.cluster.endpoint
+    host                   = "https://${data.google_container_cluster.cluster.endpoint}"
     cluster_ca_certificate = base64decode(data.google_container_cluster.cluster.master_auth[0].cluster_ca_certificate)
     token                  = data.google_client_config.default.access_token
   }
@@ -133,29 +133,31 @@ module "argoCD" {
 module "cloud_function" {
   source = "./modules/cloudFunc"
 
-  project_id = var.project_id
-  region = var.region
-  sql_exp_sa_nm = "${local.name_prefix}-cf-sqlex-sa"
-  sql_exp_nm = "${local.name_prefix}-sqlex-job"
-  export_bucket = module.gcs.bucket_name
-  instance_id = module.rds.db.name
+  project_id            = var.project_id
+  region                = var.region
+  sql_exp_sa_nm         = "${local.name_prefix}-cf-sqlex-sa"
+  sql_exp_nm            = "${local.name_prefix}-sqlex-job"
+  export_bucket         = module.gcs.bucket_name
+  instance_id           = module.rds.db.name
+  aws_access_key_id     = var.aws_access_key_id
+  aws_secret_access_key = var.aws_secret_access_key
+  aws_region            = var.aws_region
+  s3_bucket             = var.s3_bucket
 }
 
 module "google_cloud_scheduler_job" {
   source = "./modules/cloudSche"
 
   sql_export_nm = "${local.name_prefix}-sql-export-fn"
-  schedule = "0 14 * * *"
+  schedule      = "0 14 * * *"
 
-  func_url = module.cloud_function.func_url
+  func_url         = module.cloud_function.func_url
   sql_exp_sa_email = module.cloud_function.sql_exp_sa_email
 }
-
 
 module "gcs" {
   source = "./modules/gcs"
 
-  region = var.region
+  region     = var.region
   gcs_bck_nm = "${local.name_prefix}-gcs-bu"
-
 }

@@ -33,3 +33,7 @@ resource "google_sql_user" "db_user" {
   host     = "%"
   password = var.db_pw
 }
+
+data "google_project" "project" {
+  project_id = "581752627401"
+}

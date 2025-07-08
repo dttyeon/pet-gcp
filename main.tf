@@ -130,11 +130,32 @@ module "argoCD" {
   depends_on = [module.gke]
 }
 
-module "cloudRun" {
-  source = "./modules/cloudRun"
-  region = var.region
-  run_job_sa_nm = "${local.name_prefix}-rjb-sa"
-  dump_job_nm = "${local.name_prefix}-my-dump"
+module "cloud_function" {
+  source = "./modules/cloudFunc"
 
-  instance_connection_name = module.rds.db.connection_name
+  project_id = var.project_id
+  region = var.region
+  sql_exp_sa_nm = "${local.name_prefix}-cf-sqlex-sa"
+  sql_exp_nm = "${local.name_prefix}-sqlex-job"
+  export_bucket = module.gcs.bucket_name
+  instance_id = module.rds.db.name
+}
+
+module "google_cloud_scheduler_job" {
+  source = "./modules/cloudSche"
+
+  sql_export_nm = "${local.name_prefix}-sql-export-fn"
+  schedule = "0 14 * * *"
+
+  func_url = module.cloud_function.func_url
+  sql_exp_sa_email = module.cloud_function.sql_exp_sa_email
+}
+
+
+module "gcs" {
+  source = "./modules/gcs"
+
+  region = var.region
+  gcs_bck_nm = "${local.name_prefix}-gcs-bu"
+
 }

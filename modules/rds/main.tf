@@ -1,5 +1,5 @@
 resource "google_sql_database_instance" "mysql_private" {
-  name             = "${var.name_prefix}-${var.rds_suffix}"
+  name             = var.rds_nm
   database_version = var.db_version
   region           = var.region
 

@@ -59,8 +59,6 @@ resource "google_container_node_pool" "primary_nodes" {
       environment = "dev"
     }
 
-    tags = ["gke-node"]
-
   }
 
   autoscaling {

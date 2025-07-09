@@ -53,6 +53,7 @@ module "rds" {
   name_prefix = local.name_prefix
   db_pw       = var.db_pw
   db_version  = var.db_version
+  rds_nm = "${local.name_prefix}-db"
 
   #output 값
   vpc_conn = module.vpc.private_vpc_conn

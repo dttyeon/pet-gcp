@@ -59,5 +59,9 @@ RUN rm -rf /usr/local/tomcat/webapps/*
 COPY --from=builder /app/target/petclinic.war /usr/local/tomcat/webapps/ROOT.war
 EOL
 
+docker stop petclinic 2>/dev/null || true
+docker rm petclinic 2>/dev/null || true
+docker rmi petclinic-app 2>/dev/null || true
+
 docker build -t petclinic-app .
 docker run -d --network host --name petclinic -p 8080:8080 petclinic-app

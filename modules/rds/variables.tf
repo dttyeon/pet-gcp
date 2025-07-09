@@ -20,6 +20,4 @@ variable "add_db_nm" {
   default = "petclinic"
 }
 
-variable "rds_suffix" {
-  default = "mysql"
-}
+variable "rds_nm" {}

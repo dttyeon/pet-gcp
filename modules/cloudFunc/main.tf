@@ -64,33 +64,18 @@ resource "google_cloudfunctions2_function" "gcs_to_s3" {
   event_trigger {
     event_type = "google.cloud.storage.object.v1.finalized"
     retry_policy = "RETRY_POLICY_RETRY"
-    service_account_email = google_service_account.cf_gcs_to_s3_sa.email
+    service_account_email = google_service_account.invoker.email
     event_filters {
       attribute = "bucket"
-      value = var.export_bucket
+      value = google_storage_bucket.trigger-bucket.name
     }
   }
 }
+
 
 resource "google_cloudfunctions2_function_iam_member" "invoker" {
   project        = var.project_id
   cloud_function = google_cloudfunctions2_function.sql_export.name
   role           = "roles/cloudfunctions.invoker"
   member         = "allUsers"  
-}
-
-resource "google_service_account" "cf_gcs_to_s3_sa" {
-  account_id   = "cf-gcs-to-s3-sa"
-  display_name = "Cloud Function GCS to S3 Transfer Service Account"
-}
-
-resource "google_project_iam_member" "cf_gcs_to_s3_roles" {
-  for_each = toset([
-    "roles/secretmanager.secretAccessor",  # Secret Manager 접근
-    "roles/storage.objectViewer"           # GCS 읽기
-  ])
-
-  project = var.project_id
-  role    = each.value
-  member  = "serviceAccount:${google_service_account.cf_gcs_to_s3_sa.email}"
 }

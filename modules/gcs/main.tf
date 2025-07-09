@@ -17,3 +17,9 @@ resource "google_storage_bucket" "backup" {
     prevent_destroy = false
   }
 }
+
+resource "google_project_iam_member" "gcs_service_account_pubsub" {
+  project = "581752627401"
+  role    = "roles/pubsub.publisher"
+  member  = "serviceAccount:service-581752627401@gs-project-accounts.iam.gserviceaccount.com"
+}

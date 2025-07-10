@@ -14,6 +14,13 @@ resource "google_project_iam_member" "cf_sql_export_roles" {
   member  = "serviceAccount:${google_service_account.cf_sql_export_sa.email}"
 }
 
+resource "google_storage_bucket_iam_member" "sql_export_bucket_access" {
+  bucket = var.export_bucket
+  role   = "roles/storage.admin"
+  member = "serviceAccount:${google_service_account.cf_sql_export_sa.email}"
+}
+
+
 resource "google_cloudfunctions2_function" "sql_export" {
   name     = var.sql_exp_nm
   location = var.region
@@ -36,9 +43,10 @@ resource "google_cloudfunctions2_function" "sql_export" {
       EXPORT_BUCKET = var.export_bucket
       DATABASE_NAME = "petclinic"
     }
-  }
-}
+  }   
 
+}
+/*
 resource "google_cloudfunctions2_function" "gcs_to_s3" {
   name        = "gcs-to-s3-transfer"
   location    = var.region
@@ -64,18 +72,50 @@ resource "google_cloudfunctions2_function" "gcs_to_s3" {
   event_trigger {
     event_type = "google.cloud.storage.object.v1.finalized"
     retry_policy = "RETRY_POLICY_RETRY"
-    service_account_email = google_service_account.invoker.email
+    service_account_email = google_service_account.cf_gcs_to_s3_sa.email
     event_filters {
       attribute = "bucket"
-      value = google_storage_bucket.trigger-bucket.name
+      value = "ayvet-dev-gcs-bu"
     }
   }
 }
 
-
+*/
 resource "google_cloudfunctions2_function_iam_member" "invoker" {
   project        = var.project_id
   cloud_function = google_cloudfunctions2_function.sql_export.name
   role           = "roles/cloudfunctions.invoker"
-  member         = "allUsers"  
+  member         = "serviceAccount:${var.sche_email}"
 }
+
+/*
+resource "google_service_account" "cf_gcs_to_s3_sa" {
+  account_id   = "cf-gcs-to-s3-sa"
+  display_name = "Cloud Function GCS to S3 Transfer Service Account"
+}
+
+resource "google_project_iam_member" "cf_gcs_to_s3_roles" {
+  for_each = toset([
+    "roles/secretmanager.secretAccessor",  
+    "roles/storage.objectViewer",          
+    "roles/eventarc.eventReceiver",
+    "roles/pubsub.publisher"
+  ])
+
+  project = var.project_id
+  role    = each.value
+  member  = "serviceAccount:${google_service_account.cf_gcs_to_s3_sa.email}"
+}
+
+resource "google_project_iam_member" "eventarc_bucket_access" {
+  project = var.project_id
+  role    = "roles/storage.admin"
+  member  = "serviceAccount:service-581752627401@gcp-sa-eventarc.iam.gserviceaccount.com"
+}
+
+resource "google_storage_bucket_iam_member" "cloud_sql_instance_bucket_access" {
+  bucket = var.export_bucket
+  role   = "roles/storage.objectAdmin"
+  member = "serviceAccount:service-581752627401@gcp-sa-cloud-sql.iam.gserviceaccount.com"
+}
+*/

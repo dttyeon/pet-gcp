@@ -144,6 +144,7 @@ module "cloud_function" {
   aws_secret_access_key = var.aws_secret_access_key
   aws_region            = var.aws_region
   s3_bucket             = var.s3_bucket
+  sche_email = module.google_cloud_scheduler_job.sche_email
 }
 
 module "google_cloud_scheduler_job" {
